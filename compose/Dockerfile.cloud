@@ -1,0 +1,3 @@
+FROM ghcr.io/rachelos/we-mp-rss:latest
+COPY . /app
+COPY config.example.yaml /app/config.yaml
