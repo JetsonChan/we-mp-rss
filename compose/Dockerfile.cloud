@@ -1,3 +1,7 @@
-FROM ghcr.io/rachelos/we-mp-rss:latest
+FROM docker.1ms.run/library/python:3.13-slim-bookworm
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -i https://mirrors.cloud.tencent.com/pypi/simple -r requirements.txt
 COPY . /app
 COPY config.example.yaml /app/config.yaml
+CMD ["python", "main.py", "-job", "True", "-init", "True"]
