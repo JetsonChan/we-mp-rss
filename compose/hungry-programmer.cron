@@ -1,1 +1,2 @@
 0 7,17 * * * cd /home/ubuntu/werss && sudo -n docker compose -f compose/docker-compose.cloud.yaml exec -T werss python scripts/collect_hungry_programmer.py >> /home/ubuntu/.local/state/werss/collect.log 2>&1
+5,35 * * * * cd /home/ubuntu/werss && sudo -n docker compose -f compose/docker-compose.cloud.yaml exec -T werss python scripts/renew_weread_session.py >> /home/ubuntu/.local/state/werss/renew.log 2>&1

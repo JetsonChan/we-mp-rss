@@ -655,7 +655,7 @@ class WereadQRLogin:
         诊断脚本注释：'关键修复：注入 getLoginInfo 下发的登录 cookie，否则服务端
         把请求当游客处理，永不补发完整 cookie（此前 -2013 也由此导致）'）。
 
-        body 为 {"rq": "%2Fweb%2Fbook%2Fread", "ql": true}（带 ql 的变体）。
+        body 为 {"rq": "%2Fweb%2Fbook%2Fread", "ql": false}。
         成功返回更新后的 Cookie dict（含新 wr_skey），失败返回 None。
         """
         try:
@@ -672,19 +672,22 @@ class WereadQRLogin:
             for k, v in cookies.items():
                 s.cookies.set(k, v, domain="weread.qq.com", path="/")
 
-            body = {"rq": "%2Fweb%2Fbook%2Fread", "ql": True}
+            body = {"rq": "%2Fweb%2Fbook%2Fread", "ql": False}
             resp = s.post(
                 f"{WEREAD_BASE}/web/login/renewal",
                 data=json.dumps(body, separators=(",", ":")),
                 timeout=20,
             )
-            # requests 已把 Set-Cookie 自动并入 session jar，从 jar 读取更新值
+            if resp.json().get("succ") != 1:
+                print_warning("Weread QR: renewal 续期失败")
+                return None
+            # 只接受本次响应下发的 Cookie，不能把旧 jar 当成续期成功。
             # 注意：renewal 下发的 wr_skey 可能仍是 8 字符短值（wr_skey 本身就是
             # 短效令牌，靠 renewal 持续换新），不能以长度 <20 判失败，
             # 交给后续 _verify_cookies 真实校验把关。
             updated = dict(cookies)
             new_skey = ""
-            for c in s.cookies:
+            for c in resp.cookies:
                 if c.name == "wr_skey" and c.value:
                     new_skey = c.value
                     updated["wr_skey"] = c.value
